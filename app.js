@@ -27,9 +27,7 @@ app.get('/sum', (req, res) => {
   res.status(200).send(answer);
 });
 
-app.listen(8000, () => {
-  console.log('Express server is listening on port 8000');
-});
+
 /////////////////////////
 // Caesar Cipher
 app.get('/caesar', (req, res) => {
@@ -60,3 +58,65 @@ app.get('/caesar', (req, res) => {
 
   res.status(200).send(cipher);
 });
+/////////////////
+//Lotto 
+app.get('/lotto', (req, res) => {
+  const { numbers } = req.query;
+
+  if (!numbers) {
+    return res.status(400).send('Please provide numbers');
+  }
+  if (!Array.isArray(numbers)) {
+    return res.status(400).send('Please provide an array');
+  }
+
+  const picks = numbers.map(n => parseInt(n)).filter(n => {
+    !Number.isNaN(n) && (n >= 1 && n <= 20)});
+  
+  if(picks.length != 6) {
+    return res
+    .status(400)
+    .send('pick must have six numbers')
+  }
+
+  const stockNumbers = Array(20).fill(1).map((_, i) => i + 1);
+
+  const winningNumbers = [];
+  for(let i = 0; i < 6; i++) {
+    const random = Math.floor(Math.random() * stockNumbers.length);
+    winningNumbers.push(stockNumbers[random]);
+    stockNumbers.splice(random, 1);
+  }
+
+  let difference = winningNumbers.filter(n => !guesses.includes(n));
+
+  let responseText;
+
+  switch(difference.length){
+    case 0:
+      responseText = "$1,000,000";
+      break;
+    case 1:
+      responseText = "$100";
+      break;
+    case 2:
+      responseText = "Free Ticket";
+      break;
+    default:
+      responseText = "Sorry, play again";
+  }
+
+    res.json({
+    guesses,
+    winningNumbers,
+    diff,
+    responseText
+  });
+  
+  
+  res.send(responseText);
+  });
+
+  app.listen(8000, () => {
+    console.log('Express server is listening on port 8000');
+  });
